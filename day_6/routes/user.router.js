@@ -137,6 +137,13 @@ userRouter.get("/analytics", async (req, res) => {
           count: { $sum: 1 },
         },
       },
+      {
+        $project: {
+          _id: 0, // Exclude _id field
+          month: "$_id", // Rename _id field to month
+          count: 1, // Include count field
+        },
+      },
       { $sort: { _id: 1 } }, // Optional: Sort by month/year
     ]);
     return res.status(200).json({ msg: "Success", data: insights });
