@@ -1,0 +1,515 @@
+swagger: "2.0"
+info:
+  title: Cuba LIS API
+  description: ABC
+  version: 1.0.0
+  contact:
+    email: joy.das@cubainfosolution.com
+  license:
+    name: Apache 2.0
+    url: "http://apache.org/"
+  servers:
+    -url: "http://localhost:1211/"
+    description: Local Server
+    -url: "https://company.com/"
+    description: Company Server
+
+schemes: [http, https]
+
+
+paths: 
+# Welcome route
+  /:
+    get: 
+      summary: Returns a single object
+      description: Returns an object property= message value= Welcome String
+      responses:
+        200:
+          description: Success
+          schema:
+            type: Object
+            properties:
+              message:
+                type: String
+            example: An object with a property name message. Value is a welcome string.
+        500: 
+          description: Internal Server Error
+          schema:
+            type: Object
+            example: An object with a property name message. Value is a error string.
+
+  /api/user:
+    get:
+      summary: Retrieve users
+      description: Retrieves a paginated list of users excluding their passwords
+      parameters:
+        - in: header
+          name: Authorization
+          description: Authentication token
+          required: true
+          schema:
+            type: string
+            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        - in: query
+          name: page
+          description: Page number for pagination (default is 1)
+          schema:
+            type: integer
+            example: 1
+            default: 1
+        - in: query
+          name: limit
+          description: Number of items per page (default is 10)
+          schema:
+            type: integer
+            example: 10
+            default: 10
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Success
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                          example: 6096bcb9f7e7d10015a3d1b2
+                        username:
+                          type: string
+                          example: john_doe
+                        email:
+                          type: string
+                          example: john.doe@example.com
+                        createdAt:
+                          type: string
+                          format: date-time
+                          example: "2022-05-08T10:23:47.195Z"
+                        updatedAt:
+                          type: string
+                          format: date-time
+                          example: "2022-05-08T10:23:47.195Z"
+        401:
+          description: Unauthorized - Authentication token is missing or invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Unauthorized
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Internal server error
+                  error:
+                    type: string
+                    example: Error message details
+
+  /api/user/register:
+    post:
+      summary: Register a new user
+      description: Registers a new user with the provided email and password, and an optional profile picture
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+      - in: body
+        name: Registration
+        schema: 
+          type: Object
+          required: true
+            # - email
+            # - password
+          properties:
+            email:
+              type: string
+              format: email
+              description: Email address of the user
+              required: true
+              example: user@example.com
+            password:
+              type: string
+              description: Password for the user account
+              required: true
+              example: password123
+            pic:
+              type: string
+              description: URL of the user's profile picture (optional)
+              example: https://example.com/profile_pic.jpg
+      responses:
+        201:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Success
+                  data:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: 6096bcb9f7e7d10015a3d1b2
+                      email:
+                        type: string
+                        example: user@example.com
+                      pic:
+                        type: string
+                        example: https://example.com/profile_pic.jpg
+        400:
+          description: User already exists with this email id or required fields are missing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: User exists with this email id or required fields are missing
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Internal server error
+                  error:
+                    type: string
+    
+  /api/user/login:
+    post:
+      summary: User login
+      description: Logs in a user with the provided email and password
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+      - in: body
+        name: Login
+        schema: 
+          type: Object
+          required: true
+          #   - email
+          #   - password
+          properties:
+            email:
+              type: string
+              format: email
+              description: Email address of the user
+              required: true
+              example: user@example.com
+            password:
+              type: string
+              description: Password for the user account
+              required: true
+              example: password123
+      responses:
+        200:
+          description: Login Successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Login Successful
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        400:
+          description: Required details not provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Required details not provided
+        401:
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid email or password
+        404:
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: User not found
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Internal server error
+                  error:
+                    type: string
+                    example: Error message details
+
+  /api/user/update:
+    patch:
+      summary: Update user information
+      description: Updates the password of the user
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: updateUser
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+                description: Provide the email you have an account with
+                required: true
+                example: email@example.com
+              password:
+                type: string
+                description: New password for the user account (optional)
+                example: newPassword123
+      responses:
+        200:
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: User updated successfully
+                  data:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: 6096bcb9f7e7d10015a3d1b2
+                      email:
+                        type: string
+                        example: new_email@example.com
+        400:
+          description: Required details not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Required details not found
+        404:
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: User not found
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Internal server error
+                  error:
+                    type: string
+                    example: Error message details
+
+  /api/user/{userId}:
+    delete:
+      summary: Delete user
+      description: Deletes a user with the specified user ID
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          description: ID of the user to delete
+          schema:
+            type: string
+            example: "6096bcb9f7e7d10015a3d1b2"
+      responses:
+        204:
+          description: Success
+        404:
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: User not found
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Internal server error
+                  error:
+                    type: string
+                    example: Error message details
+
+  /api/user/analytics:
+    get:
+      summary: User analytics
+      description: Retrieves analytics data for user registration over time
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Success
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        month:
+                          type: string
+                          format: date
+                          example: "2022-01"
+                        count:
+                          type: integer
+                          example: 10
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Internal server error
+                  error:
+                    type: string
+                    example: Error message details
+
+  /api/user/upload_pic:
+    post:
+      summary: Upload user profile picture
+      description: Uploads and updates the user's profile picture
+      consumes:
+        - multipart/form-data
+      parameters:
+        - in: header
+          name: Authorization
+          description: Authentication token
+          required: true
+          schema:
+            type: string
+        - in: formData
+          name: pic
+          type: file
+          required: true
+          description: Image file to upload (JPEG or PNG format)
+      responses:
+        200:
+          description: Image uploaded and URL updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Image uploaded and URL updated successfully
+                  imageUrl:
+                    type: string
+                    format: uri
+                    example: https://example.com/uploads/profile_pic.jpg
+        400:
+          description: Unsupported file type or required parameters missing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Unsupported file type or required parameters missing
+        401:
+          description: Unauthorized - Authentication token is missing or invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Unauthorized
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Error uploading image
+                  error:
+                    type: string
+                    example: Error message details
